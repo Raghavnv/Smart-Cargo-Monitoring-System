@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CargoSense | Smart Cargo Transportation Monitoring</title>
+  <meta name="description" content="CargoSense monitors tilt, vibration, acceleration, and load-cell stress to protect cargo in transit and alert drivers before damage happens.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="site-shell">
+    <header class="hero">
+      <nav class="topbar glass">
+        <div class="brand">
+          <span class="brand-mark"></span>
+          <span class="brand-text">CargoSense</span>
+        </div>
+        <div class="tab-nav" id="mainTabNav">
+          <button class="tab-btn active" data-tab="tab-home">Home</button>
+          <button class="tab-btn" data-tab="tab-about">About the Project</button>
+          <button class="tab-btn" data-tab="tab-sensors">Sensor Flow</button>
+        </div>
+        <button class="topbar-dashboard-btn" onclick="switchTab('tab-dashboard')">Live Dashboard</button>
+      </nav>
+
+      <!-- HOME TAB -->
+      <div class="tab-panel active" id="tab-home">
+        <div class="hero-grid">
+          <section class="hero-copy">
+            <p class="eyebrow">Smart Cargo Transportation Monitoring</p>
+            <h1>Know when your load is in danger before damage reaches the destination.</h1>
+            <p class="hero-text">
+              CargoSense combines tilt detection, vibration tracking, acceleration sensing, and
+              load-cell intelligence to watch every shipment in real time and send fast alerts to drivers.
+            </p>
+            <div class="hero-actions">
+              <button class="button button-primary" onclick="switchTab('tab-dashboard')">View Live Dashboard</button>
+              <button class="button button-secondary" onclick="switchTab('tab-sensors')">Explore Sensors</button>
+            </div>
+            <div class="hero-stats">
+              <article><strong>8</strong><span>Live telemetry fields</span></article>
+              <article><strong>24/7</strong><span>Continuous cargo health monitoring</span></article>
+              <article><strong>Instant</strong><span>Driver alerts for unsafe conditions</span></article>
+            </div>
+          </section>
+
+          <aside class="hero-panel">
+            <div class="panel-card glass">
+              <div class="card-heading">
+                <span class="dot live"></span>
+                <span>Live Safety Summary</span>
+              </div>
+              <div class="signal-list">
+                <div><span class="signal-label">Weight monitoring</span><strong>Total, front & rear load-cell balance</strong></div>
+                <div><span class="signal-label">Vibration load</span><strong>Alert when rough-road threshold spikes</strong></div>
+                <div><span class="signal-label">Acceleration drift</span><strong>Tracks abrupt braking and impact events</strong></div>
+                <div><span class="signal-label">Tilt &amp; GPS</span><strong>Rollover angle + real-time location tracking</strong></div>
+              </div>
+            </div>
+            <div class="radar-card">
+              <div class="radar-ring ring-a"></div>
+              <div class="radar-ring ring-b"></div>
+              <div class="radar-ring ring-c"></div>
+              <div class="radar-core"></div>
+              <div class="radar-pulse"></div>
+            </div>
+          </aside>
+        </div>
+
+        <div class="signal-strip-grid" style="margin-top:48px">
+          <article>
+            <span class="strip-label">Tilt &amp; Shock</span>
+            <strong>Instant rollover and vibration-impact detection during transit.</strong>
+          </article>
+          <article>
+            <span class="strip-label">Weight Balance</span>
+            <strong>Front, rear, and total load monitoring to catch overload before it happens.</strong>
+          </article>
+          <article>
+            <span class="strip-label">GPS Location</span>
+            <strong>Real-time latitude and longitude tracking for full route visibility.</strong>
+          </article>
+        </div>
+      </div><!-- /tab-home -->
+
+      <!-- DASHBOARD TAB -->
+<div class="tab-panel" id="tab-dashboard">
+  <div class="tab-inner">
+    <div class="section-heading" style="padding-top:32px">
+      <p class="eyebrow">ThingSpeak Integration</p>
+      <h2>Live dashboard bridge for cargo telemetry.</h2>
+      <p class="section-text">
+        Live data from Channel <strong>3365338</strong> — hit Refresh or enable Auto to pull the latest readings.
+      </p>
+    </div>
+
+    <div class="dashboard-history-callout glass">
+      <div class="dashboard-history-copy">
+        <span class="history-kicker">Telemetry Archive</span>
+        <h3>Review every saved dashboard reading in one organized place.</h3>
+        <p>Successful refreshes are stored automatically with sensor values, alert status, timestamps, and GPS links.</p>
+      </div>
+      <button class="history-callout-btn" onclick="switchTab('tab-history')">View Past Data</button>
+    </div>
+
+    <div style="display:none">
+      <span id="connectionMode"></span>
+      <span id="channelLabel"></span>
+      <span id="dashboardHint"></span>
+      <a id="dashboardLink" href="#"></a>
+    </div>
+
+    <div class="cs-live-panel">
+      <div class="cs-toolbar">
+        <div class="cs-toolbar-left">
+          <span class="dot live"></span>
+          <span class="cs-toolbar-label">Live Telemetry &mdash; Channel 3365338</span>
+          <span class="cs-last-sync" id="cs-last-sync">Not yet synced</span>
+        </div>
+        <div class="cs-toolbar-right">
+          <button class="cs-btn cs-btn-primary" onclick="fetchLatest()">&#8635; Refresh</button>
+          <button class="cs-btn" id="cs-auto-btn" onclick="tsToggleAuto()">Auto OFF</button>
+          <button class="cs-btn" onclick="switchTab('tab-history')">Past Data</button>
+          <a class="cs-btn" href="https://thingspeak.com/channels/3365338" target="_blank" rel="noreferrer">ThingSpeak &#8599;</a>
+        </div>
+      </div>
+
+      <!-- Sensor cards -->
+      <div class="cs-sensor-grid" id="cs-sensor-grid"></div>
+
+      <!-- Load gauges -->
+      <div class="cs-load-gauge-row" id="cs-load-gauge-row">
+        <div class="cs-gauge-panel" data-gauge="total">
+          <div class="cs-panel-header">
+            <span class="cs-panel-title">Total Weight</span>
+            <span class="cs-panel-sub" id="gauge-total-label">&mdash; kg</span>
+          </div>
+          <div class="cs-gauge-wrap">
+            <svg class="cs-gauge-svg" viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <path d="M 20 110 A 80 80 0 0 1 180 110" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="14" stroke-linecap="round"/>
+              <path d="M 20 110 A 80 80 0 0 1 73 43" fill="none" stroke="rgba(80,227,194,0.35)" stroke-width="14" stroke-linecap="round"/>
+              <path d="M 73 43 A 80 80 0 0 1 142 34" fill="none" stroke="rgba(255,138,61,0.35)" stroke-width="14" stroke-linecap="round"/>
+              <path d="M 142 34 A 80 80 0 0 1 180 110" fill="none" stroke="rgba(248,81,73,0.35)" stroke-width="14" stroke-linecap="round"/>
+              <path id="gauge-total-fill" d="M 20 110 A 80 80 0 0 1 20 110" fill="none" stroke="var(--secondary)" stroke-width="14" stroke-linecap="round"/>
+              <line id="gauge-total-needle" x1="100" y1="110" x2="100" y2="38" stroke="var(--text)" stroke-width="2.5" stroke-linecap="round" transform="rotate(-90, 100, 110)"/>
+              <circle cx="100" cy="110" r="7" fill="var(--bg-alt)" stroke="var(--text)" stroke-width="2"/>
+              <text x="16" y="125" fill="rgba(157,176,199,0.7)" font-size="9" font-family="Space Grotesk">0</text>
+              <text x="154" y="125" fill="rgba(157,176,199,0.7)" font-size="9" font-family="Space Grotesk">1000</text>
+              <text x="90" y="28" fill="rgba(157,176,199,0.7)" font-size="9" font-family="Space Grotesk">500</text>
+              <text id="gauge-total-val" x="100" y="98" fill="var(--text)" font-size="20" font-family="Sora" font-weight="700" text-anchor="middle">&mdash;</text>
+              <text x="100" y="112" fill="var(--muted)" font-size="8" font-family="Space Grotesk" text-anchor="middle">kg</text>
+            </svg>
+            <div class="cs-gauge-status"><span class="cs-badge cs-badge-ok" id="gauge-total-badge">NORMAL</span></div>
+          </div>
+        </div>
+
+        <div class="cs-gauge-panel" data-gauge="front">
+          <div class="cs-panel-header">
+            <span class="cs-panel-title">Front Load</span>
+            <span class="cs-panel-sub" id="gauge-front-label">&mdash; kg</span>
+          </div>
+          <div class="cs-gauge-wrap">
+            <svg class="cs-gauge-svg" viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <path d="M 20 110 A 80 80 0 0 1 180 110" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="14" stroke-linecap="round"/>
+              <path d="M 20 110 A 80 80 0 0 1 73 43" fill="none" stroke="rgba(80,227,194,0.35)" stroke-width="14" stroke-linecap="round"/>
+              <path d="M 73 43 A 80 80 0 0 1 142 34" fill="none" stroke="rgba(255,138,61,0.35)" stroke-width="14" stroke-linecap="round"/>
+              <path d="M 142 34 A 80 80 0 0 1 180 110" fill="none" stroke="rgba(248,81,73,0.35)" stroke-width="14" stroke-linecap="round"/>
+              <path id="gauge-front-fill" d="M 20 110 A 80 80 0 0 1 20 110" fill="none" stroke="var(--secondary)" stroke-width="14" stroke-linecap="round"/>
+              <line id="gauge-front-needle" x1="100" y1="110" x2="100" y2="38" stroke="var(--text)" stroke-width="2.5" stroke-linecap="round" transform="rotate(-90, 100, 110)"/>
+              <circle cx="100" cy="110" r="7" fill="var(--bg-alt)" stroke="var(--text)" stroke-width="2"/>
+              <text x="16" y="125" fill="rgba(157,176,199,0.7)" font-size="9" font-family="Space Grotesk">0</text>
+              <text x="154" y="125" fill="rgba(157,176,199,0.7)" font-size="9" font-family="Space Grotesk">1000</text>
+              <text x="90" y="28" fill="rgba(157,176,199,0.7)" font-size="9" font-family="Space Grotesk">500</text>
+              <text id="gauge-front-val" x="100" y="98" fill="var(--text)" font-size="20" font-family="Sora" font-weight="700" text-anchor="middle">&mdash;</text>
+              <text x="100" y="112" fill="var(--muted)" font-size="8" font-family="Space Grotesk" text-anchor="middle">kg</text>
+            </svg>
+            <div class="cs-gauge-status"><span class="cs-badge cs-badge-ok" id="gauge-front-badge">NORMAL</span></div>
+          </div>
+        </div>
+
+        <div class="cs-gauge-panel" data-gauge="back">
+          <div class="cs-panel-header">
+            <span class="cs-panel-title">Back Load</span>
+            <span class="cs-panel-sub" id="gauge-back-label">&mdash; kg</span>
+          </div>
+          <div class="cs-gauge-wrap">
+            <svg class="cs-gauge-svg" viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <path d="M 20 110 A 80 80 0 0 1 180 110" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="14" stroke-linecap="round"/>
+              <path d="M 20 110 A 80 80 0 0 1 73 43" fill="none" stroke="rgba(80,227,194,0.35)" stroke-width="14" stroke-linecap="round"/>
+              <path d="M 73 43 A 80 80 0 0 1 142 34" fill="none" stroke="rgba(255,138,61,0.35)" stroke-width="14" stroke-linecap="round"/>
+              <path d="M 142 34 A 80 80 0 0 1 180 110" fill="none" stroke="rgba(248,81,73,0.35)" stroke-width="14" stroke-linecap="round"/>
+              <path id="gauge-back-fill" d="M 20 110 A 80 80 0 0 1 20 110" fill="none" stroke="var(--secondary)" stroke-width="14" stroke-linecap="round"/>
+              <line id="gauge-back-needle" x1="100" y1="110" x2="100" y2="38" stroke="var(--text)" stroke-width="2.5" stroke-linecap="round" transform="rotate(-90, 100, 110)"/>
+              <circle cx="100" cy="110" r="7" fill="var(--bg-alt)" stroke="var(--text)" stroke-width="2"/>
+              <text x="16" y="125" fill="rgba(157,176,199,0.7)" font-size="9" font-family="Space Grotesk">0</text>
+              <text x="154" y="125" fill="rgba(157,176,199,0.7)" font-size="9" font-family="Space Grotesk">1000</text>
+              <text x="90" y="28" fill="rgba(157,176,199,0.7)" font-size="9" font-family="Space Grotesk">500</text>
+              <text id="gauge-back-val" x="100" y="98" fill="var(--text)" font-size="20" font-family="Sora" font-weight="700" text-anchor="middle">&mdash;</text>
+              <text x="100" y="112" fill="var(--muted)" font-size="8" font-family="Space Grotesk" text-anchor="middle">kg</text>
+            </svg>
+            <div class="cs-gauge-status"><span class="cs-badge cs-badge-ok" id="gauge-back-badge">NORMAL</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Middle row: Accel gauge + Vibration buzzer -->
+      <div class="cs-mid-row">
+
+        <!-- Acceleration gauge -->
+        <div class="cs-gauge-panel">
+          <div class="cs-panel-header">
+            <span class="cs-panel-title">Raw Acceleration Z</span>
+            <span class="cs-panel-sub" id="gauge-accel-label">— m/s²</span>
+          </div>
+          <div class="cs-gauge-wrap">
+            <svg class="cs-gauge-svg" viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg">
+              <path d="M 20 110 A 80 80 0 0 1 180 110" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="14" stroke-linecap="round"/>
+              <path d="M 20 110 A 80 80 0 0 1 73 43"   fill="none" stroke="rgba(80,227,194,0.35)"  stroke-width="14" stroke-linecap="round"/>
+              <path d="M 73 43  A 80 80 0 0 1 142 34"  fill="none" stroke="rgba(255,138,61,0.35)"  stroke-width="14" stroke-linecap="round"/>
+              <path d="M 142 34 A 80 80 0 0 1 180 110" fill="none" stroke="rgba(248,81,73,0.35)"   stroke-width="14" stroke-linecap="round"/>
+              <path id="gauge-accel-fill" d="M 20 110 A 80 80 0 0 1 20 110" fill="none" stroke="var(--secondary)" stroke-width="14" stroke-linecap="round"/>
+              <line id="gauge-accel-needle" x1="100" y1="110" x2="100" y2="38"
+                stroke="var(--text)" stroke-width="2.5" stroke-linecap="round"
+                transform="rotate(-90, 100, 110)"
+                style="transform-origin:100px 110px;transition:transform 0.8s cubic-bezier(0.34,1.56,0.64,1)"/>
+              <circle cx="100" cy="110" r="7" fill="var(--bg-alt)" stroke="var(--text)" stroke-width="2"/>
+              <text x="16"  y="125" fill="rgba(157,176,199,0.7)" font-size="9" font-family="Space Grotesk">0</text>
+              <text x="158" y="125" fill="rgba(157,176,199,0.7)" font-size="9" font-family="Space Grotesk">30</text>
+              <text x="90"  y="28"  fill="rgba(157,176,199,0.7)" font-size="9" font-family="Space Grotesk">15</text>
+              <text id="gauge-accel-val" x="100" y="98" fill="var(--text)" font-size="20" font-family="Sora" font-weight="700" text-anchor="middle">—</text>
+              <text x="100" y="112" fill="var(--muted)" font-size="8" font-family="Space Grotesk" text-anchor="middle">m/s²</text>
+            </svg>
+            <div class="cs-gauge-status">
+              <span class="cs-badge cs-badge-ok" id="gauge-accel-badge">NORMAL</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vibration buzzer panel -->
+        <div class="cs-buzzer-panel" id="cs-buzzer-panel" data-level="ok">
+          <div class="cs-panel-header">
+            <span class="cs-panel-title">Vibration (Shock)</span>
+            <div class="cs-buzzer-actions">
+              <button class="cs-btn cs-buzzer-alert-btn" id="cs-vibration-alert-btn" onclick="triggerVibrationAlert()">Alert</button>
+              <button class="cs-btn cs-buzzer-mute-btn" id="cs-buzzer-mute" onclick="stopBuzzer()" style="display:none">&#128263; Mute</button>
+            </div>
+          </div>
+          <div class="cs-buzzer-body">
+            <div class="cs-buzzer-icon-wrap">
+              <div class="cs-buzzer-ring cs-buzzer-ring-1"></div>
+              <div class="cs-buzzer-ring cs-buzzer-ring-2"></div>
+              <div class="cs-buzzer-ring cs-buzzer-ring-3"></div>
+              <div class="cs-buzzer-icon">&#128276;</div>
+            </div>
+            <div class="cs-buzzer-info">
+              <div class="cs-buzzer-val" id="cs-buzzer-val">— m/s²</div>
+              <div class="cs-buzzer-sub" id="cs-buzzer-sub">Awaiting data…</div>
+              <div class="cs-vib-chart" data-vib-chart style="margin-top:12px"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GPS map -->
+      <div class="cs-gps-panel" id="cs-gps-wrap" data-has-location="false">
+        <div class="cs-panel-header">
+          <span class="cs-panel-title">&#9679; Live Location</span>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span class="cs-panel-sub" id="cs-gps-coords">—</span>
+            <a class="cs-btn" id="cs-gps-link" href="#" target="_blank" rel="noreferrer" style="font-size:0.75rem;padding:5px 12px">Open in Maps &#8599;</a>
+          </div>
+        </div>
+        <div class="cs-gps-map-wrap">
+          <iframe id="cs-gps-map" class="cs-gps-map" src="https://maps.google.com/maps?q=20.5937,78.9629&amp;z=5&amp;output=embed" loading="lazy"
+            title="Live cargo location" allowfullscreen></iframe>
+          <div class="cs-gps-waiting" id="cs-gps-waiting">Waiting for GPS fix from ThingSpeak</div>
+        </div>
+        <div class="cs-incident-panel" id="cs-incident-panel">
+          <div class="cs-incident-main">
+            <span class="cs-incident-kicker">Last Unsafe Location</span>
+            <strong id="cs-incident-address">No unsafe situation recorded yet</strong>
+            <span id="cs-incident-coords">Waiting for threshold alert and GPS data.</span>
+          </div>
+          <div class="cs-incident-details" id="cs-incident-details">
+            Unsafe weight, tilt, acceleration, or vibration events will appear here with the place/address.
+          </div>
+        </div>
+      </div>
+
+      <!-- Alert log + Vibration history -->
+      <div class="cs-bottom-row">
+        <div class="cs-panel">
+          <div class="cs-panel-header">
+            <span class="cs-panel-title">Alert Log</span>
+            <span class="cs-panel-sub" id="cs-alert-count">0 alerts</span>
+          </div>
+          <div class="cs-alert-list" id="cs-alert-list">
+            <div class="cs-alert-row">
+              <span class="cs-alert-time">--:--</span>
+              <span class="cs-alert-msg cs-msg-ok">Awaiting first fetch&hellip;</span>
+            </div>
+          </div>
+        </div>
+        <div class="cs-panel">
+          <div class="cs-panel-header">
+            <span class="cs-panel-title">Vibration History</span>
+            <span class="cs-panel-sub">Last 20 readings</span>
+          </div>
+          <div class="cs-vib-chart" data-vib-chart></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Raw Acceleration chart only -->
+    <div class="chart-grid" id="chartGrid" style="margin-top:28px"></div>
+  </div>
+</div><!-- /tab-dashboard -->
+
+      <!-- PAST DATA TAB -->
+      <div class="tab-panel" id="tab-history">
+        <div class="tab-inner">
+          <div class="section-heading" style="padding-top:32px">
+            <p class="eyebrow">Stored Dashboard Data</p>
+            <h2>Past telemetry snapshots, organized for review.</h2>
+            <p class="section-text">
+              Every successful dashboard refresh is saved in this browser and listed here with readings, status, alerts, and location.
+            </p>
+          </div>
+
+          <div class="history-panel glass">
+            <div class="history-toolbar">
+              <div>
+                <span class="history-kicker">Snapshot Archive</span>
+                <strong id="history-count-label">0 saved readings</strong>
+              </div>
+              <div class="history-actions">
+                <select class="history-select" id="history-filter" onchange="renderHistoryView()">
+                  <option value="all">All statuses</option>
+                  <option value="danger">Danger only</option>
+                  <option value="warn">Warnings only</option>
+                  <option value="ok">Normal only</option>
+                </select>
+                <button class="cs-btn cs-btn-primary" onclick="fetchLatest()">Save Latest</button>
+                <button class="cs-btn" onclick="clearTelemetryHistory()">Clear Archive</button>
+              </div>
+            </div>
+
+            <div class="history-summary-grid">
+              <article>
+                <span>Total Snapshots</span>
+                <strong id="history-stat-total">0</strong>
+              </article>
+              <article>
+                <span>Unsafe Events</span>
+                <strong id="history-stat-unsafe">0</strong>
+              </article>
+              <article>
+                <span>Last Stored</span>
+                <strong id="history-stat-last">--</strong>
+              </article>
+              <article>
+                <span>Peak Weight</span>
+                <strong id="history-stat-peak">--</strong>
+              </article>
+            </div>
+
+            <div class="history-empty" id="history-empty">
+              No stored readings yet. Use Refresh or Save Latest on the dashboard to start building the archive.
+            </div>
+
+            <div class="history-list" id="history-list"></div>
+          </div>
+        </div>
+      </div><!-- /tab-history -->
+
+
+
+      <!-- ABOUT THE PROJECT TAB -->
+      <div class="tab-panel" id="tab-about">
+        <div class="tab-inner">
+          <section class="section capabilities" style="padding-top:32px">
+            <div class="section-heading">
+              <p class="eyebrow">Sensor Intelligence</p>
+              <h2>Built for cargo protection on unpredictable roads.</h2>
+              <p class="section-text section-lead">
+                The CargoSense monitoring stack is designed to make sensor data understandable at a glance.
+                Each stream focuses on a real transport risk, so drivers and operators can act quickly instead
+                of trying to interpret raw numbers mid-journey.
+              </p>
+            </div>
+            <div class="capabilities-highlight">
+              <div class="highlight-copy glass">
+                <p class="highlight-kicker">Why the sensor layer matters</p>
+                <h3>It is not just tracking movement. It is interpreting cargo stress in real time.</h3>
+                <p>
+                  CargoSense turns motion and weight signals into practical operational insight. When vibration
+                  climbs too high, when the load begins shifting, or when acceleration patterns suggest unstable
+                  handling, the system is ready to surface that problem immediately.
+                </p>
+                <ul class="highlight-list">
+                  <li>Early warning for rollover and imbalance conditions</li>
+                  <li>Protection for sensitive or fragile cargo on rough roads</li>
+                  <li>Driver-focused alerts instead of passive logging only</li>
+                  <li>GPS tracking for full route visibility</li>
+                </ul>
+              </div>
+              <div class="sensor-overview glass">
+                <div class="sensor-overview-header">
+                  <span class="dot live"></span>
+                  <span>Sensor overview</span>
+                </div>
+                <div class="sensor-metrics">
+                  <article><strong>8</strong><span>live telemetry fields across weight, motion, tilt, and GPS</span></article>
+                  <article><strong>3</strong><span>threshold-monitored gauges with instant alert logic</span></article>
+                  <article><strong>24/7</strong><span>visibility throughout the route, not just at checkpoints</span></article>
+                </div>
+              </div>
+            </div>
+            <div class="capability-grid">
+              <article class="feature-card">
+                <div class="feature-icon">W</div>
+                <span class="feature-index">01</span>
+                <h3>Weight Monitoring</h3>
+                <p>Total, front, and rear load cells track cargo weight and balance in real time.</p>
+                <p class="feature-detail">Flags overload conditions and axle imbalance before they become structural or safety issues on the road.</p>
+              </article>
+              <article class="feature-card">
+                <div class="feature-icon">V</div>
+                <span class="feature-index">02</span>
+                <h3>Vibration Monitoring</h3>
+                <p>Watches road shock and sustained vibration to protect fragile goods and identify rough handling.</p>
+                <p class="feature-detail">Helps reduce product damage for electronics, glass, machinery, and other vibration-sensitive cargo.</p>
+              </article>
+              <article class="feature-card">
+                <div class="feature-icon">A</div>
+                <span class="feature-index">03</span>
+                <h3>Acceleration &amp; Tilt</h3>
+                <p>Captures braking, impact events, and live tilt angle to detect cargo instability.</p>
+                <p class="feature-detail">Reveals hard braking, abrupt starts, and rollover-risk tilt that can shift or damage cargo in transit.</p>
+              </article>
+              <article class="feature-card">
+                <div class="feature-icon">G</div>
+                <span class="feature-index">04</span>
+                <h3>GPS Tracking</h3>
+                <p>Real-time latitude and longitude so operators always know where the shipment is.</p>
+                <p class="feature-detail">Location data is logged alongside sensor readings for full trip audit and incident review.</p>
+              </article>
+            </div>
+          </section>
+
+          <section class="section illustration-section">
+            <div class="section-heading">
+              <p class="eyebrow">System View</p>
+              <h2>A clearer picture of where monitoring happens across the vehicle and the load.</h2>
+            </div>
+            <div class="vehicle-layout">
+              <div class="vehicle-visual glass">
+                <div class="truck">
+                  <div class="truck-cabin"></div>
+                  <div class="truck-bed">
+                    <div class="cargo-stack"></div>
+                    <div class="sensor-point sensor-tilt">Tilt</div>
+                    <div class="sensor-point sensor-vibration">Vibration</div>
+                    <div class="sensor-point sensor-acceleration">Accel</div>
+                    <div class="sensor-point sensor-load">Load Cells</div>
+                  </div>
+                  <div class="wheel wheel-front"></div>
+                  <div class="wheel wheel-back"></div>
+                </div>
+              </div>
+              <div class="vehicle-notes">
+                <article class="outcome-card glass">
+                  <h3>Sensor placement with purpose</h3>
+                  <p>Each sensing layer maps to a different transport risk, helping the platform translate raw data into meaningful safety signals.</p>
+                </article>
+                <article class="outcome-card glass">
+                  <h3>GPS + dashboard</h3>
+                  <p>Live location pairs with sensor readings so every alert is tied to where it happened on the route.</p>
+                </article>
+              </div>
+            </div>
+          </section>
+
+          <section class="section monitoring-layer">
+            <div class="section-heading">
+              <p class="eyebrow">Monitoring Outcomes</p>
+              <h2>Designed to reduce damage, improve visibility, and support safer transport decisions.</h2>
+            </div>
+            <div class="outcome-grid">
+              <article class="outcome-card glass">
+                <h3>For drivers</h3>
+                <p>Immediate alerts reduce the chance of continuing a route while cargo conditions are becoming unsafe.</p>
+              </article>
+              <article class="outcome-card glass">
+                <h3>For operators</h3>
+                <p>Live telemetry and GPS create a complete picture of how every shipment behaves throughout the trip.</p>
+              </article>
+              <article class="outcome-card glass">
+                <h3>For cargo safety</h3>
+                <p>Better detection of overload, shock, tilt, and instability helps prevent avoidable product loss.</p>
+              </article>
+            </div>
+          </section>
+        </div>
+      </div><!-- /tab-about -->
+
+      <!-- SENSOR FLOW TAB -->
+      <div class="tab-panel" id="tab-sensors">
+        <div class="tab-inner">
+          <section class="section telemetry" style="padding-top:32px">
+            <div class="section-heading">
+              <p class="eyebrow">Operational Flow</p>
+              <h2>From sensor event to driver action in one connected system.</h2>
+              <p class="section-text section-lead">
+                The website presents the full safety loop clearly: collect signals, identify risk,
+                notify the driver, and visualize route conditions through ThingSpeak.
+              </p>
+            </div>
+            <div class="timeline">
+              <article><span>01</span><h3>Measure</h3><p>Sensors collect weight, vibration, acceleration, tilt, and GPS data continuously.</p></article>
+              <article><span>02</span><h3>Evaluate</h3><p>Threshold logic identifies overload, excessive vibration, tilt risk, and unsafe motion.</p></article>
+              <article><span>03</span><h3>Notify</h3><p>Drivers receive immediate alerts when cargo needs attention on the road.</p></article>
+              <article><span>04</span><h3>Visualize</h3><p>ThingSpeak charts and GPS centralize telemetry so teams can monitor every trip.</p></article>
+            </div>
+          </section>
+
+          <section class="section alerts-flow">
+            <div class="section-heading">
+              <p class="eyebrow">Alert Logic</p>
+              <h2>How the system turns unsafe readings into immediate action.</h2>
+              <p class="section-text section-lead">
+                Detect abnormal conditions fast, verify that a threshold is crossed,
+                and notify the driver before cargo damage escalates.
+              </p>
+            </div>
+            <div class="flow-grid">
+              <article class="flow-card glass"><span>01</span><h3>Sensor reads movement or load</h3><p>Weight, acceleration, vibration, tilt, and location are continuously observed during transport.</p></article>
+              <article class="flow-card glass"><span>02</span><h3>Threshold check triggered</h3><p>The system checks whether readings indicate overload, excessive vibration, tilt risk, or unsafe motion.</p></article>
+              <article class="flow-card glass"><span>03</span><h3>Driver gets alerted</h3><p>Once risk is confirmed, the driver is notified immediately so corrective action can be taken.</p></article>
+              <article class="flow-card glass"><span>04</span><h3>Dashboard is updated</h3><p>ThingSpeak reflects the event visually so teams can review conditions and the full route timeline.</p></article>
+            </div>
+          </section>
+        </div>
+      </div><!-- /tab-sensors -->
+
+    </header>
+
+    <footer class="site-footer">
+      <div>
+        <strong>CargoSense</strong>
+        <p>Smart cargo transportation monitoring for safer routes, faster alerts, and clearer telemetry.</p>
+      </div>
+      <div class="footer-links">
+        <a href="#" onclick="switchTab('tab-sensors');return false">Sensors</a>
+        <a href="#" onclick="switchTab('tab-sensors');return false">Flow</a>
+        <a href="#" onclick="switchTab('tab-dashboard');return false">Dashboard</a>
+      </div>
+    </footer>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+  <script>
+    function switchTab(id) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === id));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === id));
+      const dashBtn = document.querySelector('.topbar-dashboard-btn');
+      if (dashBtn) dashBtn.classList.toggle('topbar-dashboard-btn-active', id === 'tab-dashboard');
+      if (id === 'tab-history' && typeof renderHistoryView === 'function') renderHistoryView();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+  </script>
+</body>
+</html>
+
+
+
